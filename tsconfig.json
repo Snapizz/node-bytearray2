@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "declaration": true,
+    "declaration": false,
     "module": "commonjs",
     "moduleResolution": "node",
     "noImplicitAny": true,
@@ -13,6 +13,8 @@
     "src/**/*.ts"
   ],
   "files": [
-    "src/greeter.ts"
+    "src/bytearray.ts",
+    "src/compression-algorithm.ts",
+    "src/endian.ts"
   ]
 }
