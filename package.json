@@ -1,0 +1,43 @@
+{
+  "name": "bytearray2",
+  "version": "0.0.0",
+  "description": "ByteArray wrapper from Actionscip 3",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Snapizz/node-bytearray2.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Snapizz/node-bytearray2/issues"
+  },
+  "homepage": "https://github.com/Snapizz/node-bytearray2#readme",
+  "author": "Snapiz <snapizz97@gmail.com>",
+  "keywords": [
+    "buffer",
+    "as3",
+    "actionscript",
+    "bytearray",
+    "flash"
+  ],
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "gulp test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "del": "2.0.2",
+    "gulp": "^3.9.0",
+    "gulp-help": "^1.6.0",
+    "gulp-inject": "3.0.0",
+    "gulp-jasmine": "^2.0.1",
+    "gulp-sequence": "0.4.1",
+    "gulp-tsconfig-files": "0.0.2",
+    "gulp-tslint": "^3.1",
+    "jasmine": "^2.3.1"
+  },
+  "engines": {
+    "node": ">=0.12.0"
+  }
+}
