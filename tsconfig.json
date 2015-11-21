@@ -13,6 +13,7 @@
     "src/**/*.ts"
   ],
   "files": [
+    "src/amf.ts",
     "src/bytearray.ts",
     "src/compression-algorithm.ts",
     "src/endian.ts"

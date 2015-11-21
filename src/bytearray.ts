@@ -1,46 +1,44 @@
 /// <reference path="../typings/node/node.d.ts" />
+/// <reference path="../typings/node-lzma/node-lzma.d.ts" />
 
 import Endian = require('./endian');
 import CompressionAlgorith = require('./compression-algorithm');
+import zlib = require('zlib');
+import lzmalib = require('node-lzma');
+import Amf = require('./amf');
 
 class ByteArray {
 	private static BUFFER_SIZE: number = 1024;
 
 	endian: Endian;
 	objectEncoding: number;
+	position: number;
 	shareable: boolean;
 	buffer: Buffer;
 
-	constructor(buffer?: Buffer | ByteArray) {
+	constructor(buffer?: Buffer | ByteArray, size: number = ByteArray.BUFFER_SIZE) {
 		if (buffer instanceof ByteArray) {
 			this.buffer = buffer.buffer;
 		} else if (buffer instanceof Buffer) {
 			this.buffer = buffer;
 		} else {
-			this.buffer = new Buffer(ByteArray.BUFFER_SIZE);
+			this.buffer = new Buffer(size);
 		}
 		this.shareable = false;
 		this.endian = Endian.Big;
 		this.objectEncoding = -1;
+		this.position = 0;
 	}
 
 	public get bytesAvailable(): number {
-		throw new Error('ByteArray.getBytesAvailable Not implemented');
-	}
-
-	public get position(): number {
-		throw new Error('ByteArray.getPosition Not implemented');
-	}
-
-	public set position(value: number) {
-		throw new Error('ByteArray.setPosition Not implemented');
+		return this.length - this.position;
 	}
 
 	public get length(): number {
-		throw new Error('ByteArray.getLength Not implemented');
+		return this.buffer.length;
 	}
 	public set length(value: number) {
-		throw new Error('ByteArray.setLength Not implemented');
+		this.buffer.length = length;
 	}
 
 	/**
@@ -49,7 +47,11 @@ class ByteArray {
 	 * if they match, swaps those bytes with another value.
 	 */
 	public atomicCompareAndSwapIntAt(byteIndex: number, expectedValue: number, newValue: number): number {
-		throw new Error('ByteArray.atomicCompareAndSwapIntAt Not implemented');
+		let byte = this.buffer[byteIndex];
+		if (byte === expectedValue) {
+			this.buffer[byteIndex] = newValue;
+		}
+		return byte;
 	}
 
 	/**
@@ -58,7 +60,18 @@ class ByteArray {
 	 * if they match, changes the length of this byte array.
 	 */
 	public atomicCompareAndSwapLength(expectedLength: number, newLength: number): number {
-		throw new Error('ByteArray.atomicCompareAndSwapLength Not implemented');
+		let prevLength = this.length;
+		if (prevLength !== expectedLength) {
+			return prevLength;
+		}
+		if (prevLength < newLength) {
+			this.buffer = Buffer.concat([this.buffer, new Buffer(newLength - prevLength)], newLength);
+		}
+		if (prevLength > newLength) {
+			this.buffer = this.buffer.slice(newLength - 1, prevLength - 1);
+		}
+		this.buffer.length = newLength;
+		return prevLength;
 	}
 
 	/**
@@ -66,7 +79,7 @@ class ByteArray {
 	 * Calling this method explicitly frees up the memory used by the ByteArray instance. 
 	 */
 	public clear(): void {
-		throw new Error('ByteArray.clear Not implemented');
+		this.buffer = new Buffer(this.buffer.length);
 	}
 
 	/**
@@ -75,14 +88,24 @@ class ByteArray {
 	 * The position property is set to the end of the byte array. 
 	 */
 	public compress(algorithm: CompressionAlgorith = CompressionAlgorith.Zlib): void {
-		throw new Error('ByteArray.compress Not implemented');
+		switch (algorithm) {
+			case CompressionAlgorith.Deflate:
+				this.buffer = zlib.deflateRawSync(this.buffer);
+				break;
+			case CompressionAlgorith.Zlib:
+				this.buffer = zlib.deflateSync(this.buffer);
+				break;
+			case CompressionAlgorith.Lzma:
+				this.buffer = lzmalib.lzma.compress(this.buffer);
+				break;
+		}
 	}
 
 	/**
 	 * Compresses the byte array using the deflate compression algorithm. The entire byte array is compressed.
 	 */
 	public deflate(): void {
-		throw new Error('ByteArray.deflate Not implemented');
+		this.compress(CompressionAlgorith.Deflate);
 	}
 
 	/**
@@ -90,21 +113,21 @@ class ByteArray {
 	 * The byte array must have been compressed using the same algorithm.
 	 */
 	public inflate(): void {
-		throw new Error('ByteArray.inflate Not implemented');
+		this.uncompress(CompressionAlgorith.Deflate);
 	}
 
 	/**
 	 * Reads a Boolean value from the byte stream. A single byte is read, and true is returned if the byte is nonzero, false otherwise.
 	 */
 	public readBoolean(): boolean {
-		throw new Error('ByteArray.readBoolean Not implemented');
+		return Boolean(this.buffer.readInt8(this.updatePosition(1)));
 	}
 
 	/**
 	 * Reads a signed byte from the byte stream.
 	 */
 	public readByte(): number {
-		throw new Error('ByteArray.readByte Not implemented');
+		return this.buffer.readInt8(this.updatePosition(1));
 	}
 
 	/**
@@ -112,71 +135,97 @@ class ByteArray {
 	 * The bytes are read into the ByteArray object specified by the bytes parameter,
 	 * and the bytes are written into the destination ByteArray starting at the position specified by offset.
 	 */
-	public readBytes(bytes: ByteArray | Buffer, offset: number = 0, length: number = 0): void {
-		throw new Error('ByteArray.readBytes Not implemented');
+	public readBytes(bytes: ByteArray | Buffer, offset: number = 0, length?: number): void {
+		length = length || this.readShort();
+		for (var i = offset; i < length; i++) {
+			if (bytes instanceof ByteArray) {
+				bytes.writeByte(this.readByte());
+			} else if (bytes instanceof Buffer) {
+				bytes.writeInt8(this.readByte(), i);
+			}
+		}
 	}
 
 	/**
 	 * Reads an IEEE 754 double-precision (64-bit) floating-point number from the byte stream.
 	 */
 	public readDouble(): number {
-		throw new Error('ByteArray.readDouble Not implemented');
+		let position = this.updatePosition(8);
+		return this.endian === Endian.Big
+			? this.buffer.readDoubleBE(position)
+			: this.buffer.readDoubleBE(position);
 	}
 
 	/**
 	 * Reads an IEEE 754 single-precision (32-bit) floating-point number from the byte stream.
 	 */
 	public readFloat(): number {
-		throw new Error('ByteArray.readFloat Not implemented');
+		let position = this.updatePosition(4);
+		return this.endian === Endian.Big
+			? this.buffer.readFloatBE(position)
+			: this.buffer.readFloatBE(position);
 	}
 
 	/**
 	 * Reads a signed 32-bit integer from the byte stream.
 	 */
 	public readInt(): number {
-		throw new Error('ByteArray.readInt Not implemented');
+		let position = this.updatePosition(4);
+		return this.endian === Endian.Big
+			? this.buffer.readInt32BE(position)
+			: this.buffer.readInt32LE(position);
 	}
 
 	/**
 	 * Reads a multibyte string of specified length from the byte stream using the specified character set.
 	 */
-	public readMultiByte(length: number, charSet: string): string {
-		throw new Error('ByteArray.readMultiByte Not implemented');
+	public readMultiByte(length: number, charSet?: string): string {
+		let position = this.updatePosition(length);
+		return this.buffer.toString(charSet || 'utf8', position, position + length);
 	}
 
 	/**
 	 * Reads an object from the byte array, encoded in AMF serialized format.
 	 */
 	public readObject(): any {
-		throw new Error('ByteArray.readObject Not implemented');
+		return Amf.read(this.buffer, this.updatePosition(this.readInt()));
 	}
 
 	/**
 	 * Reads a signed 16-bit integer from the byte stream.
 	 */
 	public readShort(): number {
-		throw new Error('ByteArray.readShort Not implemented');
+		let position = this.updatePosition(2);
+		return this.endian === Endian.Big
+			? this.buffer.readInt16BE(position)
+			: this.buffer.readInt16LE(position);
 	}
 
 	/**
 	 * Reads an unsigned byte from the byte stream.
 	 */
 	public readUnsignedByte(): number {
-		throw new Error('ByteArray.readUnsignedByte Not implemented');
+		return this.buffer.readUInt8(this.updatePosition(1));
 	}
 
 	/**
 	 * Reads an unsigned 32-bit integer from the byte stream.
 	 */
 	public readUnsignedInt(): number {
-		throw new Error('ByteArray.readUnsignedInt Not implemented');
+		let position = this.updatePosition(4);
+		return this.endian === Endian.Big
+			? this.buffer.readUInt32BE(position)
+			: this.buffer.readUInt32LE(position);
 	}
 
 	/**
 	 * Reads an unsigned 16-bit integer from the byte stream
 	 */
 	public readUnsignedShort(): number {
-		throw new Error('ByteArray.readUnsignedShort Not implemented');
+		let position = this.updatePosition(2);
+		return this.endian === Endian.Big
+			? this.buffer.readUInt16BE(position)
+			: this.buffer.readUInt16LE(position);
 	}
 
 	/**
@@ -184,21 +233,23 @@ class ByteArray {
 	 * The string is assumed to be prefixed with an unsigned short indicating the length in bytes.
 	 */
 	public readUTF(): string {
-		throw new Error('ByteArray.readUTF Not implemented');
+		let len = this.readShort();
+		let position = this.updatePosition(len);
+		return this.buffer.toString('utf8', position, position + len);
 	}
 
 	/**
 	 * Reads a sequence of UTF-8 bytes specified by the length parameter from the byte stream and returns a string.
 	 */
 	public readUTFBytes(length: number): string {
-		throw new Error('ByteArray.readUTFBytes Not implemented');
+		return this.readMultiByte(length);
 	}
 
 	/**
 	 * Provides an overridable method for customizing the JSON encoding of values in an ByteArray object.
 	 */
-	public toJSON(k: string): JSON {
-		throw new Error('ByteArray.toJSON Not implemented');
+	public toJSON(k: string): any {
+		return this.buffer.toJSON();
 	}
 
 	/**
@@ -207,8 +258,8 @@ class ByteArray {
 	 * If System.useCodePage is set to true,
 	 * the application will treat the data in the array as being in the current system code page when converting.
 	 */
-	public toString(): string {
-		throw new Error('ByteArray.toString Not implemented');
+	public toString(encoding?: string, offset?: number, length?: number): string {
+		return this.buffer.toString(encoding || 'utf8', offset || 0, length || this.length);
 	}
 
 	/**
@@ -216,92 +267,156 @@ class ByteArray {
 	 * the length property of the ByteArray is set to the new length. The position property is set to 0.
 	 */
 	public uncompress(algorithm: CompressionAlgorith = CompressionAlgorith.Zlib): void {
-		throw new Error('ByteArray.uncompress Not implemented');
+		switch (algorithm) {
+			case CompressionAlgorith.Deflate:
+				this.buffer = zlib.inflateRawSync(this.buffer);
+				break;
+			case CompressionAlgorith.Zlib:
+				this.buffer = zlib.inflateSync(this.buffer);
+				break;
+			case CompressionAlgorith.Lzma:
+				this.buffer = lzmalib.lzma.decompress(this.buffer);
+				break;
+		}
 	}
 
 	/**
 	 * Writes a Boolean value.
 	 */
-	public writeBoolean(value: boolean): void {
-		throw new Error('ByteArray.writeBoolean Not implemented');
+	public writeBoolean(value: boolean): number {
+		return this.buffer.writeInt8(Number(value), this.updatePosition(1));
 	}
 
 	/**
 	 * Writes a byte to the byte stream.
 	 */
-	public writeByte(value: number): void {
-		throw new Error('ByteArray.writeByte Not implemented');
+	public writeByte(value: number): number {
+		return this.buffer.writeInt8(value, this.updatePosition(1));
 	}
 
 	/**
 	 * Writes a sequence of length bytes from the specified byte array, bytes,
 	 * starting offset(zero-based index) bytes into the byte stream.
 	 */
-	public writeBytes(bytes: ByteArray | Buffer, offset: number = 0, length: number = 0): void {
-		throw new Error('ByteArray.writeBytes Not implemented');
+	public writeBytes(bytes: ByteArray | Buffer, offset: number = 0, length?: number): void {
+		length = length || bytes.length;
+		this.writeShort(length);
+		for (var i = offset; i < length; i++) {
+			if (bytes instanceof ByteArray) {
+				this.writeByte(bytes.readByte());
+			} else if (bytes instanceof Buffer) {
+				this.writeByte(bytes.readInt8(i));
+			}
+		}
 	}
 
 	/**
 	 * Writes an IEEE 754 double-precision (64-bit) floating-point number to the byte stream.
 	 */
-	public writeDouble(value: number): void {
-		throw new Error('ByteArray.writeDouble Not implemented');
+	public writeDouble(value: number): number {
+		let position = this.updatePosition(8);
+		return this.endian === Endian.Big
+			? this.buffer.writeDoubleBE(value, position)
+			: this.buffer.writeDoubleBE(value, position);
 	}
 
 	/**
 	 * Writes an IEEE 754 single-precision (32-bit) floating-point number to the byte stream.
 	 */
-	public writeFloat(value: number): void {
-		throw new Error('ByteArray.writeFloat Not implemented');
+	public writeFloat(value: number): number {
+		let position = this.updatePosition(4);
+		return this.endian === Endian.Big
+			? this.buffer.writeFloatBE(value, position)
+			: this.buffer.writeFloatBE(value, position);
 	}
 
 	/**
 	 * Writes a 32-bit signed integer to the byte stream.
 	 */
-	public writeInt(value: number): void {
-		throw new Error('ByteArray.writeInt Not implemented');
+	public writeInt(value: number): number {
+		let position = this.updatePosition(4);
+		return this.endian === Endian.Big
+			? this.buffer.writeInt32BE(value, position)
+			: this.buffer.writeInt32LE(value, position);
 	}
 
 	/**
 	 * Writes a multibyte string to the byte stream using the specified character set.
 	 */
-	public writeMultiByte(value: string, charSet: string): void {
-		throw new Error('ByteArray.writeMultiByte Not implemented');
+	public writeMultiByte(value: string, charSet?: string): number {
+		let len = Buffer.byteLength(value);
+		return this.buffer.write(value, this.updatePosition(len), len, charSet || 'utf8');
 	}
 
 	/**
 	 * Writes an object into the byte array in AMF serialized format.
 	 */
 	public writeObject(object: any): void {
-		throw new Error('ByteArray.writeObject Not implemented');
+		let len = Buffer.byteLength(object);
+		this.writeInt(len);
+		Amf.write(this.buffer, object, this.updatePosition(len));
 	}
 
 	/**
 	 * Writes a 16-bit integer to the byte stream.
 	 */
-	public writeShort(value: number): void {
-		throw new Error('ByteArray.writeShort Not implemented');
+	public writeShort(value: number): number {
+		let position = this.updatePosition(2);
+		return this.endian === Endian.Big
+			? this.buffer.writeInt16BE(value, position)
+			: this.buffer.writeInt16LE(value, position);
 	}
 
 	/**
 	 * Writes a 32-bit unsigned integer to the byte stream.
 	 */
-	public writeUnsignedInt(value: number): void {
-		throw new Error('ByteArray.writeUnsignedInt Not implemented');
+	public writeUnsignedInt(value: number): number {
+		let position = this.updatePosition(4);
+		return this.endian === Endian.Big
+			? this.buffer.writeUInt32BE(value, position)
+			: this.buffer.writeUInt32LE(value, position);
+	}
+
+	/**
+	 * Writes a 16-bit unsigned integer to the byte stream.
+	 */
+	public writeUnsignedShort(value: number): number {
+		let position = this.updatePosition(2);
+		return this.endian === Endian.Big
+			? this.buffer.writeUInt16BE(value, position)
+			: this.buffer.writeUInt16LE(value, position);
+	}
+
+	/**
+	 * Writes a 8-bit unsigned integer to the byte stream.
+	 */
+	public writeUnsignedByte(value: number): number {
+		return this.buffer.writeUInt8(Number(value), this.updatePosition(1));
 	}
 
 	/**
 	 * Writes a UTF-8 string to the byte stream.
 	 */
-	public writeUTF(value: string): void {
-		throw new Error('ByteArray.writeUTF Not implemented');
+	public writeUTF(value: string): number {
+		let len = Buffer.byteLength(value);
+		this.writeShort(len);
+		return this.buffer.write(value, this.updatePosition(len), len);
 	}
 
 	/**
 	 * Writes a UTF-8 string to the byte stream.
 	 */
-	public writeUTFBytes(value: string): void {
-		throw new Error('ByteArray.writeUTFBytes Not implemented');
+	public writeUTFBytes(value: string): number {
+		return this.writeMultiByte(value);
+	}
+
+	/**
+	 * Update position with number after use it
+	 */
+	private updatePosition(n: number): number {
+		let a = this.position;
+		this.position += n;
+		return a;
 	}
 }
 
