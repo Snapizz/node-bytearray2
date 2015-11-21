@@ -1,84 +1,9 @@
 /// <reference path="../node/node.d.ts" />
-/// <reference path="../node-lzma/node-lzma.d.ts" />
 
 declare module 'bytearray2' {
-    class Amf {
-        static read(buffer: Buffer, info: any): any;
-        private static bytesUsed(info, n);
-        private static readNumber(buffer, info);
-        private static readBoolean(buffer, info);
-        private static readString(buffer, info);
-        private static readObject(buffer, info, object?);
-        private static readReference(buffer, info);
-        private static readECMAArray<T>(buffer, info, array?);
-        private static END_OBJECT;
-        private static readStrictArray<T>(buffer, info, array?);
-        private static readDate(buffer, info);
-        private static readTypedObject(buffer, info);
-        static write(buffer: Buffer, value: any, info: any): void;
-        private static getType(value, info);
-        private static writeNumber(buffer, value, info);
-        private static writeBoolean(buffer, value, info);
-        private static writeString(buffer, value, info);
-        private static writeObject(buffer, object, info);
-        private static writeReference(buffer, value, info);
-        private static isReference(value, info);
-        private static writeECMAArray(buffer, array, info);
-    } module Amf {
-        enum Amf0Type {
-            kNumberType = 0,
-            kBooleanType = 1,
-            kStringType = 2,
-            kObjectType = 3,
-            kMovieClipType = 4,
-            kNullType = 5,
-            kUndefinedType = 6,
-            kReferenceType = 7,
-            kECMAArrayType = 8,
-            kObjectEndType = 9,
-            kStrictArrayType = 10,
-            kDateType = 11,
-            kLongStringType = 12,
-            kUnsupportedType = 13,
-            kRecordsetType = 14,
-            kXMLObjectType = 15,
-            kTypedObjectType = 16,
-        }
-    }
-    export = Amf;
-
-}
-
-declare module 'node-lzma' {
-    module NodeLzma {
-        export module lzma {
-            export function compress(buf: Buffer, level?: number, threads?: number): Buffer;
-            export function decompress(buf: Buffer): Buffer;
-        }
-    }
-    export = NodeLzma;
-} declare module 'bytearray2' {
-    enum Endian {
-        Big = 0,
-        Little = 1,
-    }
-    export = Endian;
-
-}
-declare module 'bytearray2' {
-    enum CompressionAlgorithm {
-        Deflate = 0,
-        Lzma = 1,
-        Zlib = 2,
-    }
-    export = CompressionAlgorithm;
-
-}
-declare module 'bytearray2' {
-    import Endian = require('endian');
-    import CompressionAlgorith = require('compression-algorithm'); class ByteArray {
+    class ByteArray {
         private static BUFFER_SIZE;
-        endian: Endian;
+        endian: ByteArray.Endian;
         objectEncoding: number;
         position: number;
         shareable: boolean;
@@ -108,7 +33,7 @@ declare module 'bytearray2' {
 	     * After the call, the length property of the ByteArray is set to the new length.
 	     * The position property is set to the end of the byte array.
 	     */
-        compress(algorithm?: CompressionAlgorith): void;
+        compress(algorithm?: ByteArray.CompressionAlgorithm): void;
 	    /**
 	     * Compresses the byte array using the deflate compression algorithm. The entire byte array is compressed.
 	     */
@@ -192,7 +117,7 @@ declare module 'bytearray2' {
 	     * Decompresses the byte array. After the call,
 	     * the length property of the ByteArray is set to the new length. The position property is set to 0.
 	     */
-        uncompress(algorithm?: CompressionAlgorith): void;
+        uncompress(algorithm?: ByteArray.CompressionAlgorithm): void;
 	    /**
 	     * Writes a Boolean value.
 	     */
@@ -255,6 +180,16 @@ declare module 'bytearray2' {
 	     */
         private updatePosition(n);
     }
+    module ByteArray {
+        export enum Endian {
+            Big = 0,
+            Little = 1,
+        }
+        export enum CompressionAlgorithm {
+            Deflate = 0,
+            Lzma = 1,
+            Zlib = 2,
+        }
+    }
     export = ByteArray;
-
 }

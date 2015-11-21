@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "ByteArray wrapper from Actionscip 3",
   "license": "MIT",
+  "main": "lib/bytearray.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Snapizz/node-bytearray2.git"
