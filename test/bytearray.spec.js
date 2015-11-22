@@ -22,10 +22,14 @@ describe('ByteArray', function () {
 	byteArray.writeUTF('Hello word');
 	byteArray.writeUTF('Hello word2');
 	byteArray.writeUTF('Hello word3');
-	byteArray.writeBytes(new Buffer('YOPPP'));
+	var loc = new ByteArray();
+	loc.writeByte(1);
+	loc.writeByte(21);
+	loc.writeByte(48);
+	loc.writeByte(17);
+	byteArray.writeBytes(loc);
 	byteArray.writeMultiByte('YOPPP', 'ascii');
 	byteArray.writeObject({ id: 1, name: 'uop' });
-
 	byteArray = new ByteArray(byteArray);
 
 	it('should be init', function () {
@@ -92,7 +96,11 @@ describe('ByteArray', function () {
 	it('should read/write Bytes', function () {
 		var b = new ByteArray();
 		byteArray.readBytes(b);
-		expect(b.toString('utf8', 0, 5)).toEqual('YOPPP');
+		b.position = 0;
+		expect(b.readByte()).toEqual(1);
+		expect(b.readByte()).toEqual(21);
+		expect(b.readByte()).toEqual(48);
+		expect(b.readByte()).toEqual(17);
 	});
 
 	it('should read/write MultiBytes', function () {
@@ -101,10 +109,6 @@ describe('ByteArray', function () {
 	
 	it('should read/write Object', function () {
 		expect(byteArray.readObject()).toEqual({ id: 1, name: 'uop' });
-	});
-
-	it('should be YOPPP', function () {
-		expect(new ByteArray(new Buffer('YOPPP')).toString()).toEqual('YOPPP');
 	});
 
 	it('should compress/decompress', function () {

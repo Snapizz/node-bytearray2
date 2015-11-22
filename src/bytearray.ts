@@ -16,14 +16,8 @@ class ByteArray {
 	shareable: boolean;
 	buffer: Buffer;
 
-	constructor(buffer?: Buffer | ByteArray, size: number = ByteArray.BUFFER_SIZE) {
-		if (buffer instanceof ByteArray) {
-			this.buffer = buffer.buffer;
-		} else if (buffer instanceof Buffer) {
-			this.buffer = buffer;
-		} else {
-			this.buffer = new Buffer(size);
-		}
+	constructor(buffer?: ByteArray, size: number = ByteArray.BUFFER_SIZE) {
+		this.buffer = buffer ? buffer.buffer : new Buffer(size);
 		this.shareable = false;
 		this.endian = Endian.Big;
 		this.objectEncoding = -1;
@@ -135,14 +129,10 @@ class ByteArray {
 	 * The bytes are read into the ByteArray object specified by the bytes parameter,
 	 * and the bytes are written into the destination ByteArray starting at the position specified by offset.
 	 */
-	public readBytes(bytes: ByteArray | Buffer, offset: number = 0, length?: number): void {
+	public readBytes(bytes: ByteArray, offset: number = 0, length?: number): void {
 		length = length || this.readShort();
-		for (var i = offset; i < length; i++) {
-			if (bytes instanceof ByteArray) {
-				bytes.writeByte(this.readByte());
-			} else if (bytes instanceof Buffer) {
-				bytes.writeInt8(this.readByte(), i);
-			}
+		for (var i = offset; i < length && bytes.bytesAvailable > 0; i++) {
+			bytes.writeByte(this.readByte());
 		}
 	}
 
@@ -298,15 +288,12 @@ class ByteArray {
 	 * Writes a sequence of length bytes from the specified byte array, bytes,
 	 * starting offset(zero-based index) bytes into the byte stream.
 	 */
-	public writeBytes(bytes: ByteArray | Buffer, offset: number = 0, length?: number): void {
-		length = length || bytes.length;
+	public writeBytes(bytes: ByteArray, offset: number = 0, length?: number): void {
+        length = length || bytes.position;
+		bytes.position = 0;
 		this.writeShort(length);
-		for (var i = offset; i < length; i++) {
-			if (bytes instanceof ByteArray) {
-				this.writeByte(bytes.readByte());
-			} else if (bytes instanceof Buffer) {
-				this.writeByte(bytes.readInt8(i));
-			}
+		for (var i = offset; i < length && this.bytesAvailable > 0; i++) {
+			this.writeByte(bytes.readByte());
 		}
 	}
 

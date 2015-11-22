@@ -8,7 +8,7 @@ declare module 'bytearray2' {
         position: number;
         shareable: boolean;
         buffer: Buffer;
-        constructor(buffer?: Buffer | ByteArray, size?: number);
+        constructor(buffer?: ByteArray, size?: number);
         bytesAvailable: number;
         length: number;
 	    /**
@@ -56,7 +56,7 @@ declare module 'bytearray2' {
 	     * The bytes are read into the ByteArray object specified by the bytes parameter,
 	     * and the bytes are written into the destination ByteArray starting at the position specified by offset.
 	     */
-        readBytes(bytes: ByteArray | Buffer, offset?: number, length?: number): void;
+        readBytes(bytes: ByteArray, offset?: number, length?: number): void;
 	    /**
 	     * Reads an IEEE 754 double-precision (64-bit) floating-point number from the byte stream.
 	     */
@@ -130,7 +130,7 @@ declare module 'bytearray2' {
 	     * Writes a sequence of length bytes from the specified byte array, bytes,
 	     * starting offset(zero-based index) bytes into the byte stream.
 	     */
-        writeBytes(bytes: ByteArray | Buffer, offset?: number, length?: number): void;
+        writeBytes(bytes: ByteArray, offset?: number, length?: number): void;
 	    /**
 	     * Writes an IEEE 754 double-precision (64-bit) floating-point number to the byte stream.
 	     */
