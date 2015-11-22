@@ -95,7 +95,7 @@ describe('ByteArray', function () {
 
 	it('should read/write Bytes', function () {
 		var b = new ByteArray();
-		byteArray.readBytes(b);
+		byteArray.readBytes(b, 0, 4);
 		b.position = 0;
 		expect(b.readByte()).toEqual(1);
 		expect(b.readByte()).toEqual(21);

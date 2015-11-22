@@ -136,7 +136,7 @@ class ByteArray {
 	 * and the bytes are written into the destination ByteArray starting at the position specified by offset.
 	 */
 	public readBytes(bytes: ByteArray, offset: number = 0, length?: number): void {
-		length = length || this.readShort();
+		length = length || 0;
 		for (var i = offset; i < length && bytes.bytesAvailable > 0; i++) {
 			bytes.writeByte(this.readByte());
 		}
@@ -297,7 +297,6 @@ class ByteArray {
 	public writeBytes(bytes: ByteArray, offset: number = 0, length?: number): void {
         length = length || bytes.position;
 		bytes.position = 0;
-		this.writeShort(length);
 		for (var i = offset; i < length && this.bytesAvailable > 0; i++) {
 			this.writeByte(bytes.readByte());
 		}
