@@ -16,8 +16,14 @@ class ByteArray {
 	shareable: boolean;
 	buffer: Buffer;
 
-	constructor(buffer?: ByteArray, size: number = ByteArray.BUFFER_SIZE) {
-		this.buffer = buffer ? buffer.buffer : new Buffer(size);
+	constructor(buffer?: Buffer | ByteArray, size: number = ByteArray.BUFFER_SIZE) {
+		if (buffer instanceof ByteArray) {
+			this.buffer = buffer.buffer;
+		} else if (buffer instanceof Buffer) {
+			this.buffer = buffer;
+		} else {
+			this.buffer = new Buffer(size);
+		}
 		this.shareable = false;
 		this.endian = Endian.Big;
 		this.objectEncoding = -1;
