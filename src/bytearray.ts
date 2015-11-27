@@ -22,7 +22,6 @@ class ByteArray {
 		} else if (buffer instanceof Buffer) {
 			this.buffer = buffer;
 		} else {
-			console.log(typeof(buffer), typeof(buffer) === 'number');
 			this.buffer = new Buffer(typeof(buffer) === 'number' ? Number(buffer) : ByteArray.BUFFER_SIZE);
 		}
 		this.shareable = false;
