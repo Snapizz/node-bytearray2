@@ -1,6 +1,6 @@
 {
   "name": "bytearray2",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "ByteArray wrapper from Actionscip 3",
   "license": "MIT",
   "main": "lib/bytearray.js",
