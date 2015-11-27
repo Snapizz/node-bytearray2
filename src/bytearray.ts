@@ -22,7 +22,7 @@ class ByteArray {
 		} else if (buffer instanceof Buffer) {
 			this.buffer = buffer;
 		} else {
-			this.buffer = new Buffer(buffer instanceof Number ? buffer : ByteArray.BUFFER_SIZE);
+			this.buffer = new Buffer(typeof(buffer) === 'number' ? Number(buffer) : ByteArray.BUFFER_SIZE);
 		}
 		this.shareable = false;
 		this.endian = Endian.Big;
