@@ -135,4 +135,7 @@ describe('ByteArray', function () {
 		byteArray.atomicCompareAndSwapLength(512, 2048);
 		expect(byteArray.length).toEqual(2048);
 	})
+	it('should length to be 32', function () {
+		expect((new ByteArray(32)).length).toEqual(32);
+	})
 });
