@@ -8,7 +8,7 @@ declare module 'bytearray2' {
         position: number;
         shareable: boolean;
         buffer: Buffer;
-        constructor(buffer?: Buffer | ByteArray, size?: number);
+        constructor(buffer?: Buffer | ByteArray | number);
         bytesAvailable: number;
         length: number;
 	    /**
