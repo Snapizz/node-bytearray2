@@ -439,6 +439,7 @@ class ByteArray {
 		for (var i = 0; i < array.length; i++) {
 			ba.writeByte(array[i]);
 		}
+		ba.reset();
 		return ba;
 	}
 
