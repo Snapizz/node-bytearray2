@@ -22,7 +22,7 @@ class ByteArray {
 		} else if (buffer instanceof Buffer) {
 			this.buffer = buffer;
 		} else {
-			this.buffer = new Buffer(typeof(buffer) === 'number' ? Number(buffer) : ByteArray.BUFFER_SIZE);
+			this.buffer = new Buffer(typeof (buffer) === 'number' ? Number(buffer) : ByteArray.BUFFER_SIZE);
 		}
 		this.shareable = false;
 		this.endian = Endian.Big;
@@ -400,6 +400,23 @@ class ByteArray {
 	 */
 	public writeUTFBytes(value: string): number {
 		return this.writeMultiByte(value);
+	}
+
+	/**
+	 * Resize buff without unusable byte base on position
+	 */
+	public resize(): void {
+		let ba = new ByteArray(this.position);
+		ba.writeBytes(this);
+		this.reset();
+		this.buffer = ba.buffer;
+	}
+
+	/**
+	 * Set position to 0
+	 */
+	public reset(): void {
+		this.position = 0;
 	}
 
 	/**

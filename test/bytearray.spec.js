@@ -138,4 +138,11 @@ describe('ByteArray', function () {
 	it('should length to be 32', function () {
 		expect((new ByteArray(32)).length).toEqual(32);
 	})
+	it('should be resized', function () {
+		byteArray = new ByteArray();
+		byteArray.writeUTFBytes('yopm');
+		expect(byteArray.length).toEqual(1024);
+		byteArray.resize();
+		expect(byteArray.length).toEqual(4);
+	})
 });

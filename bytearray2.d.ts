@@ -175,6 +175,14 @@ declare module 'bytearray2' {
 	     * Writes a UTF-8 string to the byte stream.
 	     */
         writeUTFBytes(value: string): number;
+        /**
+        * Resize buff without unusable byte base on position
+        */
+        public resize(): void;
+        /**
+        * Set position to 0
+        */
+        public reset(): void;
 	    /**
 	     * Update position with number after use it
 	     */
