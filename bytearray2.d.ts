@@ -183,6 +183,14 @@ declare module 'bytearray2' {
         * Set position to 0
         */
         public reset(): void;
+        /**
+        * Convert ByteArray to array number
+        */
+        public toArray(): number[];
+        /**
+        * Convert array number to ByteArray
+        */
+        public static fromArray(array: number[]): ByteArray;
 	    /**
 	     * Update position with number after use it
 	     */

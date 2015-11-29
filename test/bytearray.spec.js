@@ -144,5 +144,7 @@ describe('ByteArray', function () {
 		expect(byteArray.length).toEqual(1024);
 		byteArray.resize();
 		expect(byteArray.length).toEqual(4);
+		expect(byteArray.toArray().length).toEqual(4);
+		expect((ByteArray.fromArray(byteArray.toArray())).toString()).toEqual('yopm');
 	})
 });

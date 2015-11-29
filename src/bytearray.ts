@@ -420,6 +420,29 @@ class ByteArray {
 	}
 
 	/**
+	 * Convert ByteArray to array number
+	 */
+	public toArray(): number[] {
+		this.reset();
+		var array: number[] = [];
+		while (this.bytesAvailable > 0) {
+			array.push(this.readByte());
+		}
+		return array;
+	}
+
+	/**
+	 * Convert array number to ByteArray
+	 */
+	public static fromArray(array: number[]): ByteArray {
+		let ba = new ByteArray(array.length);
+		for (var i = 0; i < array.length; i++) {
+			ba.writeByte(array[i]);
+		}
+		return ba;
+	}
+
+	/**
 	 * Update position with number after use it
 	 */
 	private updatePosition(n: number): number {
