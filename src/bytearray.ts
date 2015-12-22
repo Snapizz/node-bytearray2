@@ -136,8 +136,8 @@ class ByteArray {
 	 * and the bytes are written into the destination ByteArray starting at the position specified by offset.
 	 */
 	public readBytes(bytes: ByteArray, offset: number = 0, length?: number): void {
-		length = length || 0;
-		for (var i = offset; i < length && bytes.bytesAvailable > 0; i++) {
+		length = length || this.length;
+		for (var i = offset; i < length; i++) {
 			bytes.writeByte(this.readByte());
 		}
 	}
@@ -280,14 +280,14 @@ class ByteArray {
 	 * Writes a Boolean value.
 	 */
 	public writeBoolean(value: boolean): number {
-		return this.buffer.writeInt8(Number(value), this.updatePosition(1));
+		return this.buffer.writeInt8(Number(value), this.updatePosition(1, true));
 	}
 
 	/**
 	 * Writes a byte to the byte stream.
 	 */
 	public writeByte(value: number): number {
-		return this.buffer.writeInt8(value, this.updatePosition(1));
+		return this.buffer.writeInt8(value, this.updatePosition(1, true));
 	}
 
 	/**
@@ -295,9 +295,14 @@ class ByteArray {
 	 * starting offset(zero-based index) bytes into the byte stream.
 	 */
 	public writeBytes(bytes: ByteArray, offset: number = 0, length?: number): void {
-        length = length || bytes.position;
+        length = length || bytes.length;
 		bytes.position = 0;
-		for (var i = offset; i < length && this.bytesAvailable > 0; i++) {
+		let nsize = length - this.bytesAvailable;
+		console.log(this.bytesAvailable, length, nsize);
+		if (nsize > 0) {
+			this.resize(this.length + nsize + 1);
+		}
+		for (var i = offset; i < length; i++) {
 			this.writeByte(bytes.readByte());
 		}
 	}
@@ -306,7 +311,7 @@ class ByteArray {
 	 * Writes an IEEE 754 double-precision (64-bit) floating-point number to the byte stream.
 	 */
 	public writeDouble(value: number): number {
-		let position = this.updatePosition(8);
+		let position = this.updatePosition(8, true);
 		return this.endian === Endian.Big
 			? this.buffer.writeDoubleBE(value, position)
 			: this.buffer.writeDoubleBE(value, position);
@@ -316,7 +321,7 @@ class ByteArray {
 	 * Writes an IEEE 754 single-precision (32-bit) floating-point number to the byte stream.
 	 */
 	public writeFloat(value: number): number {
-		let position = this.updatePosition(4);
+		let position = this.updatePosition(4, true);
 		return this.endian === Endian.Big
 			? this.buffer.writeFloatBE(value, position)
 			: this.buffer.writeFloatBE(value, position);
@@ -326,7 +331,7 @@ class ByteArray {
 	 * Writes a 32-bit signed integer to the byte stream.
 	 */
 	public writeInt(value: number): number {
-		let position = this.updatePosition(4);
+		let position = this.updatePosition(4, true);
 		return this.endian === Endian.Big
 			? this.buffer.writeInt32BE(value, position)
 			: this.buffer.writeInt32LE(value, position);
@@ -337,7 +342,7 @@ class ByteArray {
 	 */
 	public writeMultiByte(value: string, charSet?: string): number {
 		let len = Buffer.byteLength(value);
-		return this.buffer.write(value, this.updatePosition(len), len, charSet || 'utf8');
+		return this.buffer.write(value, this.updatePosition(len, true), len, charSet || 'utf8');
 	}
 
 	/**
@@ -346,14 +351,14 @@ class ByteArray {
 	public writeObject(object: any): void {
 		let len = Buffer.byteLength(object);
 		this.writeInt(len);
-		Amf.write(this.buffer, object, this.updatePosition(len));
+		Amf.write(this.buffer, object, this.updatePosition(len, true));
 	}
 
 	/**
 	 * Writes a 16-bit integer to the byte stream.
 	 */
 	public writeShort(value: number): number {
-		let position = this.updatePosition(2);
+		let position = this.updatePosition(2, true);
 		return this.endian === Endian.Big
 			? this.buffer.writeInt16BE(value, position)
 			: this.buffer.writeInt16LE(value, position);
@@ -363,7 +368,7 @@ class ByteArray {
 	 * Writes a 32-bit unsigned integer to the byte stream.
 	 */
 	public writeUnsignedInt(value: number): number {
-		let position = this.updatePosition(4);
+		let position = this.updatePosition(4, true);
 		return this.endian === Endian.Big
 			? this.buffer.writeUInt32BE(value, position)
 			: this.buffer.writeUInt32LE(value, position);
@@ -373,7 +378,7 @@ class ByteArray {
 	 * Writes a 16-bit unsigned integer to the byte stream.
 	 */
 	public writeUnsignedShort(value: number): number {
-		let position = this.updatePosition(2);
+		let position = this.updatePosition(2, true);
 		return this.endian === Endian.Big
 			? this.buffer.writeUInt16BE(value, position)
 			: this.buffer.writeUInt16LE(value, position);
@@ -383,7 +388,7 @@ class ByteArray {
 	 * Writes a 8-bit unsigned integer to the byte stream.
 	 */
 	public writeUnsignedByte(value: number): number {
-		return this.buffer.writeUInt8(Number(value), this.updatePosition(1));
+		return this.buffer.writeUInt8(Number(value), this.updatePosition(1, true));
 	}
 
 	/**
@@ -392,7 +397,7 @@ class ByteArray {
 	public writeUTF(value: string): number {
 		let len = Buffer.byteLength(value);
 		this.writeShort(len);
-		return this.buffer.write(value, this.updatePosition(len), len);
+		return this.buffer.write(value, this.updatePosition(len, true), len);
 	}
 
 	/**
@@ -405,10 +410,10 @@ class ByteArray {
 	/**
 	 * Resize buff without unusable byte base on position
 	 */
-	public resize(): void {
-		let ba = new ByteArray(this.position);
+	public resize(size?: number): void {
+		let ba = new ByteArray(size || this.position);
 		ba.writeBytes(this);
-		this.reset();
+		this.position = size && this.position > size ? size : this.position;
 		this.buffer = ba.buffer;
 	}
 
@@ -446,10 +451,20 @@ class ByteArray {
 	/**
 	 * Update position with number after use it
 	 */
-	private updatePosition(n: number): number {
+	private updatePosition(n: number, write?: boolean): number {
+		if (write) {
+			//this.resizeBeforeWrite(n);
+		}
 		let a = this.position;
 		this.position += n;
 		return a;
+	}
+
+	private resizeBeforeWrite(n: number): void {
+		let size = this.position + n;
+		if (size >= this.length) {
+			this.resize(size);
+		}
 	}
 }
 

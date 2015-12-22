@@ -22,14 +22,10 @@ describe('ByteArray', function () {
 	byteArray.writeUTF('Hello word');
 	byteArray.writeUTF('Hello word2');
 	byteArray.writeUTF('Hello word3');
-	var loc = new ByteArray();
-	loc.writeByte(1);
-	loc.writeByte(21);
-	loc.writeByte(48);
-	loc.writeByte(17);
-	byteArray.writeBytes(loc);
+	byteArray.writeBytes(ByteArray.fromArray([1,21,48,17]));
 	byteArray.writeMultiByte('YOPPP', 'ascii');
 	byteArray.writeObject({ id: 1, name: 'uop' });
+	byteArray.resize();
 	byteArray = new ByteArray(byteArray);
 
 	it('should be init', function () {
@@ -146,5 +142,8 @@ describe('ByteArray', function () {
 		expect(byteArray.length).toEqual(4);
 		expect(byteArray.toArray().length).toEqual(4);
 		expect((ByteArray.fromArray(byteArray.toArray())).toString()).toEqual('yopm');
+		byteArray.resize(2);
+		expect(byteArray.position).toEqual(2);
+		
 	})
 });

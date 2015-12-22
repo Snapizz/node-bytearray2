@@ -178,7 +178,7 @@ declare module 'bytearray2' {
         /**
         * Resize buff without unusable byte base on position
         */
-        public resize(): void;
+        public resize(size?: number): void;
         /**
         * Set position to 0
         */
