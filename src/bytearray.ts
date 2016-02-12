@@ -1,10 +1,12 @@
 /// <reference path="../typings/node/node.d.ts" />
-/// <reference path="../typings/node-lzma/node-lzma.d.ts" />
+/// <reference path="../local/lzma-native.d.ts" />
+/// <reference path="../local/deasync.d.ts" />
 
 import Endian = require('./endian');
 import CompressionAlgorith = require('./compression-algorithm');
 import zlib = require('zlib');
-import lzmalib = require('node-lzma');
+import lzma = require('lzma-native');
+import deasync = require('deasync');
 import Amf = require('./amf');
 
 class ByteArray {
@@ -96,7 +98,14 @@ class ByteArray {
 				this.buffer = zlib.deflateSync(this.buffer);
 				break;
 			case CompressionAlgorith.Lzma:
-				this.buffer = lzmalib.lzma.compress(this.buffer);
+                var done = false;
+				lzma.LZMA().compress(this.buffer, 1, (result) => {
+                    this.buffer = result;
+                    done = true;
+                });
+                deasync.loopWhile(() => {
+                    return !done;
+                });
 				break;
 		}
 	}
@@ -271,7 +280,14 @@ class ByteArray {
 				this.buffer = zlib.inflateSync(this.buffer);
 				break;
 			case CompressionAlgorith.Lzma:
-				this.buffer = lzmalib.lzma.decompress(this.buffer);
+                var done = false;
+                lzma.LZMA().decompress(this.buffer, (result) => {
+                    this.buffer = result;
+                    done = true;
+                });
+                deasync.loopWhile(() => {
+                    return !done;
+                });
 				break;
 		}
 	}
