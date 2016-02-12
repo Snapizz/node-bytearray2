@@ -30,7 +30,6 @@
     "deasync": "^0.1.4",
     "install": "^0.3.0",
     "lzma-native": "^1.0.4",
-    "node-lzma": "0.0.1",
     "npm": "^3.4.1"
   },
   "devDependencies": {
