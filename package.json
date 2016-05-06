@@ -11,7 +11,7 @@
   "files": [
     "dist"
   ],
-  "main": "dist/index.js",
+  "main": "dist/bytearray.js",
   "keywords": [
     "bytearray",
     "actionscript",
@@ -47,5 +47,10 @@
     "prepublish": "gulp prepublish",
     "test": "gulp"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "deasync": "^0.1.6",
+    "es6-enum": "^1.0.3",
+    "lzma-native": "^1.3.1"
+  }
 }

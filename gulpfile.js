@@ -39,7 +39,7 @@ gulp.task('pre-test', function () {
 gulp.task('test', ['pre-test'], function (cb) {
   var mochaErr;
 
-  gulp.src('test/**/*.js')
+  gulp.src('lib/**/*.test.js')
     .pipe(plumber())
     .pipe(jasmine())
     .on('error', function (err) {
