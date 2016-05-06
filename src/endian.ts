@@ -3,4 +3,4 @@ enum Endian {
 	Little
 }
 
-export = Endian;
+export default Endian;

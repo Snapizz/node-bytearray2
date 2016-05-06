@@ -4,4 +4,4 @@ enum CompressionAlgorithm {
 	Zlib
 }
 
-export = CompressionAlgorithm;
+export default CompressionAlgorithm;

@@ -2,12 +2,11 @@
   "compilerOptions": {
     "declaration": false,
     "module": "commonjs",
-    "moduleResolution": "node",
     "noImplicitAny": true,
     "outDir": "./lib",
     "preserveConstEnums": true,
     "removeComments": true,
-    "target": "es5"
+    "target": "es6"
   },
   "filesGlob": [
     "src/**/*.ts"

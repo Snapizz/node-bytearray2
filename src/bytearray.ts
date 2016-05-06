@@ -1,15 +1,15 @@
-/// <reference path="../typings/node/node.d.ts" />
-/// <reference path="../local/lzma-native.d.ts" />
-/// <reference path="../local/deasync.d.ts" />
+/// <reference path='../typings/node/node.d.ts' />
+/// <reference path='../local/lzma-native.d.ts' />
+/// <reference path='../local/deasync.d.ts' />
 
-import Endian = require('./endian');
-import CompressionAlgorith = require('./compression-algorithm');
-import zlib = require('zlib');
-import lzma = require('lzma-native');
-import deasync = require('deasync');
-import Amf = require('./amf');
+import Endian from './endian';
+import CompressionAlgorith from './compression-algorithm';
+import * as zlib from 'zlib';
+import * as lzma from 'lzma-native';
+import * as deasync from 'deasync';
+import Amf from './amf';
 
-class ByteArray {
+export default class ByteArray {
 	private static BUFFER_SIZE: number = 1024;
 
 	endian: Endian;
@@ -483,5 +483,3 @@ class ByteArray {
 		}
 	}
 }
-
-export = ByteArray;

@@ -1,6 +1,6 @@
 /// <reference path="../typings/node/node.d.ts" />
 
-class Amf {
+export default class Amf {
 	public static read(buffer: Buffer, info: any): any {
 		if ('number' === typeof info) {
 			info = { offset: info };
@@ -20,29 +20,29 @@ class Amf {
 		this.bytesUsed(info, 1);
 
 		switch (type) {
-			case Amf.Amf0Type.kNumberType:
+			case Amf0Type.kNumberType:
 				return this.readNumber(buffer, info);
-			case Amf.Amf0Type.kBooleanType:
+			case Amf0Type.kBooleanType:
 				return this.readBoolean(buffer, info);
-			case Amf.Amf0Type.kStringType:
+			case Amf0Type.kStringType:
 				return this.readString(buffer, info);
-			case Amf.Amf0Type.kObjectType:
+			case Amf0Type.kObjectType:
 				return this.readObject(buffer, info);
-			case Amf.Amf0Type.kNullType:
+			case Amf0Type.kNullType:
 				return null;
-			case Amf.Amf0Type.kUndefinedType:
+			case Amf0Type.kUndefinedType:
 				return undefined;
-			case Amf.Amf0Type.kReferenceType:
+			case Amf0Type.kReferenceType:
 				return this.readReference(buffer, info);
-			case Amf.Amf0Type.kECMAArrayType:
+			case Amf0Type.kECMAArrayType:
 				return this.readECMAArray(buffer, info);
-			case Amf.Amf0Type.kObjectEndType:
+			case Amf0Type.kObjectEndType:
 				return this.END_OBJECT;
-			case Amf.Amf0Type.kStrictArrayType:
+			case Amf0Type.kStrictArrayType:
 				return this.readStrictArray(buffer, info);
-			case Amf.Amf0Type.kDateType:
+			case Amf0Type.kDateType:
 				return this.readDate(buffer, info);
-			case Amf.Amf0Type.kTypedObjectType:
+			case Amf0Type.kTypedObjectType:
 				return this.readTypedObject(buffer, info);
 			default:
 				throw new Error('"type" not yet implemented: ' + type);
@@ -236,36 +236,36 @@ class Amf {
 		this.bytesUsed(info, 1);
 
 		switch (type) {
-			case Amf.Amf0Type.kNumberType:
+			case Amf0Type.kNumberType:
 				this.writeNumber(buffer, value, info);
 				break;
-			case Amf.Amf0Type.kBooleanType:
+			case Amf0Type.kBooleanType:
 				this.writeBoolean(buffer, value, info);
 				break;
-			case Amf.Amf0Type.kStringType:
+			case Amf0Type.kStringType:
 				this.writeString(buffer, value, info);
 				break;
-			case Amf.Amf0Type.kObjectType:
+			case Amf0Type.kObjectType:
 				this.writeObject(buffer, value, info);
 				break;
-			case Amf.Amf0Type.kNullType:
-			case Amf.Amf0Type.kUndefinedType:
+			case Amf0Type.kNullType:
+			case Amf0Type.kUndefinedType:
 				break; // nothing to do for these two...
-			case Amf.Amf0Type.kReferenceType:
+			case Amf0Type.kReferenceType:
 				this.writeReference(buffer, value, info);
 				break;
-			case Amf.Amf0Type.kECMAArrayType:
+			case Amf0Type.kECMAArrayType:
 				this.writeECMAArray(buffer, value, info);
 				break;
-			case Amf.Amf0Type.kObjectEndType:
+			case Amf0Type.kObjectEndType:
 				break; // nothing to do...
-			case Amf.Amf0Type.kStrictArrayType:
+			case Amf0Type.kStrictArrayType:
 				//this.writeStrictArray(buffer, value, info);
 				break;
-			case Amf.Amf0Type.kDateType:
+			case Amf0Type.kDateType:
 				//this.writeDate(buffer, value, info);
 				break;
-			case Amf.Amf0Type.kTypedObjectType:
+			case Amf0Type.kTypedObjectType:
 				//this.writeTypedObject(buffer, value, info);
 				break;
 			default:
@@ -275,32 +275,32 @@ class Amf {
 
 	private static getType(value: any, info: any): number {
 		if (null === value) {
-			return Amf.Amf0Type.kNullType;
+			return Amf0Type.kNullType;
 		}
 		if (undefined === value) {
-			return Amf.Amf0Type.kUndefinedType;
+			return Amf0Type.kUndefinedType;
 		}
 		if (this.END_OBJECT === value) {
-			return Amf.Amf0Type.kObjectEndType;
+			return Amf0Type.kObjectEndType;
 		}
 		var type = typeof value;
 		if ('number' === type) {
-			return Amf.Amf0Type.kNumberType;
+			return Amf0Type.kNumberType;
 		}
 		if ('boolean' === type) {
-			return Amf.Amf0Type.kBooleanType;
+			return Amf0Type.kBooleanType;
 		}
 		if ('string' === type) {
-			return Amf.Amf0Type.kStringType;
+			return Amf0Type.kStringType;
 		}
 		if ('object' === type) {
 			if (this.isReference(value, info)) {
-				return Amf.Amf0Type.kReferenceType;
+				return Amf0Type.kReferenceType;
 			}
 			if (Array.isArray(value)) {
-				return Amf.Amf0Type.kECMAArrayType;
+				return Amf0Type.kECMAArrayType;
 			}
-			return Amf.Amf0Type.kObjectType;
+			return Amf0Type.kObjectType;
 		}
 		throw new Error('could not infer AMF "type" for ' + value);
 	}
@@ -423,27 +423,23 @@ class Amf {
 	}
 }
 
-module Amf {
-	export enum Amf0Type {
-		kNumberType = 0,
-		kBooleanType = 1,
-		kStringType = 2,
-		kObjectType = 3,
-		kMovieClipType = 4,
-		kNullType = 5,
-		kUndefinedType = 6,
-		kReferenceType = 7,
-		kECMAArrayType = 8,
-		kObjectEndType = 9,
-		kStrictArrayType = 10,
-		kDateType = 11,
-		kLongStringType = 12,
-		kUnsupportedType = 13,
-		kRecordsetType = 14,
-		kXMLObjectType = 15,
-		kTypedObjectType = 16,
+export enum Amf0Type {
+    kNumberType = 0,
+    kBooleanType = 1,
+    kStringType = 2,
+    kObjectType = 3,
+    kMovieClipType = 4,
+    kNullType = 5,
+    kUndefinedType = 6,
+    kReferenceType = 7,
+    kECMAArrayType = 8,
+    kObjectEndType = 9,
+    kStrictArrayType = 10,
+    kDateType = 11,
+    kLongStringType = 12,
+    kUnsupportedType = 13,
+    kRecordsetType = 14,
+    kXMLObjectType = 15,
+    kTypedObjectType = 16,
 
-	}
 }
-
-export = Amf;
