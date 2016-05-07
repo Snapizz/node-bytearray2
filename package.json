@@ -1,13 +1,9 @@
 {
-  "name": "node-bytearray-2",
-  "version": "0.0.0",
+  "name": "bytearray2",
+  "version": "1.3.3",
   "description": "bytearray flash wrapper",
-  "homepage": "",
-  "author": {
-    "name": "snapiz97",
-    "email": "snapizz97@gmail.com",
-    "url": ""
-  },
+  "homepage": "https://github.com/Snapizz/node-bytearray2#readme",
+  "author": "Snapiz <snapizz97@gmail.com>",
   "files": [
     "dist"
   ],
@@ -16,7 +12,9 @@
     "bytearray",
     "actionscript",
     "as3",
-    "as2"
+    "as2",
+    "buffer",
+    "flash"
   ],
   "devDependencies": {
     "babel-core": "^5.5.0",
@@ -42,7 +40,10 @@
       "mocha": false
     }
   },
-  "repository": "git@github.com:Snapizz/node-bytearray2.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Snapizz/node-bytearray2.git"
+  },
   "scripts": {
     "prepublish": "gulp prepublish",
     "test": "gulp"
